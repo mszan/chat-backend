@@ -26,15 +26,11 @@
         // Last messages.
         const last_messages = JSON.parse('{{ last_messages | safe}}')
 
-        chatSocket.onopen = e => {
+        chatSocket.onopen = () => {
             console.log(last_messages)
             last_messages.map(x => {
-                return (
-                    chatLogEl.value += `${x.fields.timestamp} ${x.fields.text} \n`
-                )
+                return chatLogEl.value += `${x.fields.timestamp} ${x.fields.text} \n`
             })
-            {#const data = JSON.parse(e.data);#}
-            {#chatLogEl.value += (data.message + '\n');#}
         }
 
         chatSocket.onmessage = e => {
@@ -42,7 +38,7 @@
             chatLogEl.value += (data.message + '\n');
         };
 
-        chatSocket.onclose = e => {
+        chatSocket.onclose = () => {
             console.error('Chat socket closed unexpectedly');
         };
 
@@ -53,7 +49,7 @@
             }
         };
 
-        document.querySelector('#chat-message-submit').onclick = e => {
+        document.querySelector('#chat-message-submit').onclick = () => {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
             chatSocket.send(JSON.stringify({
