@@ -35,8 +35,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.admindocs',
+
+    # Third-party libraries.
     'rest_framework',
     'channels',
+    'compressor',
+    'crispy_forms',
+
+    # Django apps.
     'chat',
 ]
 
@@ -114,10 +121,20 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.1/howto/static-files/
-
 STATIC_URL = '/static/'
+STATIC_ROOT = 'static'
+
+# SCSS.
+
+STATICFILES_FINDERS = [
+    'compressor.finders.CompressorFinder'
+]
+
+COMPRESS_PRECOMPILERS = (
+    ('text/x-scss', 'django_libsass.SassCompiler'),
+)
+
+# Django channels.
 
 ASGI_APPLICATION = "chatproject.asgi.application"
 
@@ -129,3 +146,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Django Crispy Forms.
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

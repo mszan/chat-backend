@@ -1,0 +1,17 @@
+{# Displays login form. #}
+
+{% extends "chat/base.html" %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+        <h4 class="mb-3">Login</h4>
+        {{ form.username|as_crispy_field }}
+        {{ form.password|as_crispy_field }}
+        <button class="btn btn-primary" type="submit">
+            <i class="fas fa-check mr-1"></i><span>Login</span>
+        </button>
+        <input type="hidden" name="next" value="{{ next }}">
+    </form>
+{% endblock content %}
