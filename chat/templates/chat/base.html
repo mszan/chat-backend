@@ -39,6 +39,7 @@
             </li>
         </ul>
         {% if user.is_authenticated %}
+            <span class="text-white">{{ user.username }}</span>
             <a class="btn btn-primary" href="{% url 'logout' %}">Logout</a>
         {% else %}
             <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
@@ -52,7 +53,7 @@
             <div class="col-12">
                 {% for message in messages %}
                     <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" role="alert">
-                        {{ message }}
+                        {{ message|safe }}
                     </div>
                 {% endfor %}
             </div>

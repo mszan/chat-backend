@@ -1,12 +1,15 @@
 {% extends 'chat/base.html' %}
 
 {% block content %}
-    <p>Room <b>{{ room_name }}</b></p>
+    <h4>Room <b>{{ room_object.name }}</b></h4>
+    <h6>Admins: {% for admin_user in room_object.admins.all %}{{ admin_user }} {% endfor %}</h6>
+    <h6>Users: {% for normal_user in room_object.users.all %}{{ normal_user }} {% endfor %}</h6>
 
     <textarea class="form-control" id="chat-log" cols="100" rows="20"></textarea><br>
     <input class="form-control" id="chat-message-input" type="text" size="100"><br>
     <input class="btn btn-primary" id="chat-message-submit" type="button" value="Send">
-    {{ room_name|json_script:"room-name" }}
+    {{ room_object.name|json_script:"room-name" }}
+    {{ last_messages|json_script:"last-messages" }}
     <script>
         // Room name.
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
@@ -24,18 +27,25 @@
         );
 
         // Last messages.
-        const last_messages = JSON.parse('{{ last_messages | safe}}')
-
+        lastMessagesJsonString = document.getElementById('last-messages').textContent;  // JSON string.
+        const lastMessages = JSON.parse(JSON.parse(lastMessagesJsonString));            // Parses JSON to object.
         chatSocket.onopen = () => {
-            console.log(last_messages)
-            last_messages.map(x => {
-                return chatLogEl.value += `${x.fields.timestamp} ${x.fields.text} \n`
+            Object.keys(lastMessages).forEach(key => {
+                const fields = lastMessages[key]['fields']; // Base for fields values.
+                const username = fields['user'][0];         // Username.
+                const text = fields['text'];                // Message content.
+
+                return chatLogEl.value += `${username}: ${text} \n`;    // Append message to textarea.
             })
         }
 
         chatSocket.onmessage = e => {
-            const data = JSON.parse(e.data);
-            chatLogEl.value += (data.message + '\n');
+            const data = JSON.parse(e.data);        // Parses message data.
+
+            const username = data.username          // Username.
+            const text = data.message;              // Message content.
+
+            chatLogEl.value += `${username}: ${text} \n`    // Append message to textarea.
         };
 
         chatSocket.onclose = () => {
@@ -53,6 +63,7 @@
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
             chatSocket.send(JSON.stringify({
+                'username': "{{ user.username }}",
                 'message': message
             }));
             messageInputDom.value = '';

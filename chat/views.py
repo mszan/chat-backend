@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import DetailView, TemplateView
 
 from chat.forms import UserLoginForm
-from chat.models import Message
+from chat.models import Message, Room
 
 
 class HomeView(TemplateView):
@@ -85,21 +85,41 @@ class RoomView(LoginRequiredMixin, DetailView):
     Displays a chat room.
     """
     login_url = '/login/'
-    print('yo')
 
     def get(self, request, *args, **kwargs):
         room_name = self.kwargs['room_name']  # Chat room name.
 
-        #   Check if user is not authenticated.
+        # Check if room object exists in database.
+        if Room.objects.filter(name=room_name).exists():
+            room_object = Room.objects.get(name=room_name)  # Room object instance.
+
+            # Check if user is allowed to join the room.
+            if request.user not in room_object.users.all():
+                # If user is not allowed, display a message and redirect to lobby.
+                messages.warning(request, f'You do not have access to room <strong>{room_name}</strong>.')
+                return redirect('lobby')
+
+        # If room doesn't exist.
+        else:
+            room_object = Room(name=room_name)  # Create new room object.
+            room_object.save()  # Save created object to database.
+            room_object.users.add(request.user)  # Add user to room users field.
+            room_object.admins.add(request.user)  # Add creator to room admins field.
+
+        # Check if user is not authenticated.
         if not request.user.is_authenticated:
             messages.warning(request, 'You need to login first.')  # Display message to user.
             redirect('login')  # Redirect to login page.
 
-        # Parse last (previous) messages from database.
-        last_messages = serializers.serialize("json", Message.objects.all())
+        # Parse last (previous) messages from database and serialize them.
+        last_messages = serializers.serialize(
+            "json",
+            Message.objects.filter(room=room_object),
+            use_natural_foreign_keys=True
+        )
 
         # Render template.
         return render(request, 'chat/room.html', {
             'last_messages': last_messages,
-            'room_name': room_name
+            'room_object': room_object
         })
