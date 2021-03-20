@@ -1,5 +1,6 @@
 {% load static %}
 {% load compress %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,10 +19,14 @@
         {# Base stylesheet. #}
         <link type="text/x-scss" href="{% static 'scss/base.scss' %}" rel="stylesheet" media="screen">
     {% endcompress %}
+
+    {# Font Awesome. #}
+    <script src="https://kit.fontawesome.com/1f366812cf.js" crossorigin="anonymous"></script>
+
 </head>
 <body>
 <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand" href="#">app</a>
+    <a class="navbar-brand" href="#"><i class="fas fa-comments"></i> CHAT APP</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" aria-expanded="false">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -39,10 +44,12 @@
             </li>
         </ul>
         {% if user.is_authenticated %}
-            <span class="text-white">{{ user.username }}</span>
-            <a class="btn btn-primary" href="{% url 'logout' %}">Logout</a>
+            <button class="btn btn-secondary disabled mr-1">
+                <span class="text-white">{{ user.username }}</span>
+            </button>
+            <a class="btn btn-primary" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
         {% else %}
-            <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
+            <a class="btn btn-primary" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
         {% endif %}
     </div>
 </nav>
@@ -65,7 +72,6 @@
             {% endblock %}
         </div>
     </div>
-
 </main>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
@@ -76,6 +82,30 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
+<script>
+    // ENABLE BOOTSTRAP TOOLTIPS
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+    // END
+
+    // NO EMPTY FORMS
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to.
+    let forms = document.querySelectorAll('.needs-validation')
+
+    // Loop over them and prevent submission.
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    // END
+</script>
 
 </body>
 </html>

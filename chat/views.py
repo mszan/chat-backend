@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import DetailView, TemplateView
 
 from chat.forms import UserLoginForm
-from chat.models import Message, Room
+from chat.models import Message, Room, InvitationKey
 
 
 class HomeView(TemplateView):
@@ -87,6 +87,11 @@ class RoomView(LoginRequiredMixin, DetailView):
     login_url = '/login/'
 
     def get(self, request, *args, **kwargs):
+        # Check if user is not authenticated.
+        if not request.user.is_authenticated:
+            messages.warning(request, 'You need to login first.')  # Display message to user.
+            redirect('login')  # Redirect to login page.
+
         room_name = self.kwargs['room_name']  # Chat room name.
 
         # Check if room object exists in database.
@@ -98,18 +103,12 @@ class RoomView(LoginRequiredMixin, DetailView):
                 # If user is not allowed, display a message and redirect to lobby.
                 messages.warning(request, f'You do not have access to room <strong>{room_name}</strong>.')
                 return redirect('lobby')
-
         # If room doesn't exist.
         else:
             room_object = Room(name=room_name)  # Create new room object.
             room_object.save()  # Save created object to database.
             room_object.users.add(request.user)  # Add user to room users field.
             room_object.admins.add(request.user)  # Add creator to room admins field.
-
-        # Check if user is not authenticated.
-        if not request.user.is_authenticated:
-            messages.warning(request, 'You need to login first.')  # Display message to user.
-            redirect('login')  # Redirect to login page.
 
         # Parse last (previous) messages from database and serialize them.
         last_messages = serializers.serialize(
@@ -123,3 +122,31 @@ class RoomView(LoginRequiredMixin, DetailView):
             'last_messages': last_messages,
             'room_object': room_object
         })
+
+
+class JoinRoomView(LoginRequiredMixin, DetailView):
+    """
+    Redirects to specific room if invitation key is valid.
+    """
+    login_url = '/login/'
+
+    def get(self, request, *args, **kwargs):
+        # Invitation key parameter.
+        invitation_key = self.kwargs['invitation_key']
+        if not invitation_key:
+            messages.warning(request, 'Missing invitation key.')
+            return redirect('lobby')
+
+        # Invitation key object from database.
+        key_object = InvitationKey.objects.filter(key=invitation_key).first()
+        if not key_object:
+            messages.warning(request, 'Invalid invitation key.')
+            return redirect('lobby')
+
+        # Name of the room associated with the key.
+        room_name = key_object.room.name
+        if not room_name:
+            messages.warning(request, 'Room does not exist anymore.')
+            return redirect('lobby')
+
+        return redirect('room', room_name=room_name)

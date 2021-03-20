@@ -1,13 +1,147 @@
 {% extends 'chat/base.html' %}
 
 {% block content %}
-    <h4>Room <b>{{ room_object.name }}</b></h4>
-    <h6>Admins: {% for admin_user in room_object.admins.all %}{{ admin_user }} {% endfor %}</h6>
-    <h6>Users: {% for normal_user in room_object.users.all %}{{ normal_user }} {% endfor %}</h6>
+    {# Invite users modal. #}
+    <div class="modal fade" id="inviteUserModal" tabindex="-1" role="dialog" aria-labelledby="inviteUserModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inviteUserModalLabel">Invite new users</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Who will be able to join:
+                    <div class="form-check pl-0">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="inviteTypeRadio"
+                                   id="inviteTypeRadioAnyone" checked>
+                            <label class="form-check-label" for="inviteTypeRadioAnyone">
+                                Anyone
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="inviteTypeRadio"
+                                   id="inviteTypeRadioSpecUser">
+                            <label class="form-check-label" for="inviteTypeRadioSpecUser">
+                                Specific user
+                            </label>
+                        </div>
+                    </div>
+                    <div class="collapse" id="inviteModalBodyDetails">
+                        <label class="form-check-label" for="inviteInputSpecUser">
+                            Username
+                        </label>
+                        <input type="email" class="form-control" id="inviteInputSpecUser" placeholder="Enter username">
+                    </div>
+                    <br/>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="inviteCheckGiveAdmin">
+                        <label class="form-check-label" for="inviteCheckGiveAdmin">
+                            Give admin privileges
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Generate invite key</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <textarea class="form-control" id="chat-log" cols="100" rows="20"></textarea><br>
-    <input class="form-control" id="chat-message-input" type="text" size="100"><br>
-    <input class="btn btn-primary" id="chat-message-submit" type="button" value="Send">
+    {# Delete users modal. #}
+    <div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inviteModalLabel">Delete users</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    list of users etc
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Delete room modal. #}
+    <div class="modal fade" id="deleteRoomModal" tabindex="-1" role="dialog" aria-labelledby="deleteRoomModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="inviteModalLabel">Delete room</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this room? You cannot undone this action.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger">Delete</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <div>
+            <span data-toggle="modal" data-target="#inviteUserModal">
+                <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="bottom"
+                        title="Add new users to this room.">
+                    <i class="fas fa-user-plus"></i>
+                </button>
+            </span>
+            <span data-toggle="modal" data-target="#deleteUserModal">
+                <button type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="bottom"
+                        title="Delete users from this room.">
+                    <i class="fas fa-user-minus"></i>
+                </button>
+            </span>
+        </div>
+        <div>
+            <span data-toggle="modal" data-target="#deleteRoomModal">
+                <button type="button" class="btn btn-danger" data-toggle="tooltip" data-placement="bottom"
+                        title="Delete this room.">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </span>
+        </div>
+    </div>
+    <hr>
+    <div>
+        <h4>Room <b>{{ room_object.name }}</b></h4>
+        <h6>Users: {% for user in room_object.users.all %}
+            {% if user in  room_object.admins.all %}
+                <span class="text-danger" data-toggle="tooltip" title="Room administrator">{{ user }}</span>
+            {% else %}
+                <span>{{ user }}</span>
+            {% endif %}
+            {% if not forloop.last %}<span style="color: #d0d0d0">|</span>{% endif %}
+        {% endfor %}</h6>
+        {#        <h6>Admins: {% for admin_user in room_object.admins.all %}{{ admin_user }} {% endfor %}</h6>#}
+        {#        <h6>Users: {% for normal_user in room_object.users.all %}{{ normal_user }} {% endfor %}</h6>#}
+    </div>
+
+    <textarea class="form-control" id="chat-log" cols="100" rows="20" placeholder="Chat history is empty."></textarea>
+
+    <div class="d-flex mt-2">
+        <button class="btn btn-primary mr-2" id="chat-message-submit">
+            <i class="fas fa-paper-plane"></i> Send
+        </button>
+        <input class="form-control" id="chat-message-input" type="text" size="100" placeholder="Enter message"><br>
+    </div>
     {{ room_object.name|json_script:"room-name" }}
     {{ last_messages|json_script:"last-messages" }}
     <script>
@@ -49,7 +183,7 @@
         };
 
         chatSocket.onclose = () => {
-            console.error('Chat socket closed unexpectedly');
+            console.error('Chat socket closed unexpectedly')
         };
 
         document.querySelector('#chat-message-input').focus();
@@ -62,11 +196,24 @@
         document.querySelector('#chat-message-submit').onclick = () => {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'username': "{{ user.username }}",
-                'message': message
-            }));
-            messageInputDom.value = '';
+            if (message.length > 0) {
+                chatSocket.send(JSON.stringify({
+                    'username': "{{ user.username }}",
+                    'message': message
+                }));
+                messageInputDom.value = '';
+            }
         };
+
+        const inviteTypeRadioAnyoneEl = document.getElementById('inviteTypeRadioAnyone');
+        const inviteTypeRadioSpecUserEl = document.getElementById('inviteTypeRadioSpecUser');
+
+        inviteTypeRadioAnyoneEl.addEventListener('click', () => {
+            $('#inviteModalBodyDetails').collapse('hide')
+        })
+
+        inviteTypeRadioSpecUserEl.addEventListener('click', () => {
+            $('#inviteModalBodyDetails').collapse('show')
+        })
     </script>
 {% endblock %}

@@ -2,34 +2,17 @@
 
 {% block content %}
     <form class="needs-validation" method="GET" action="javascript:redirectToRoom();">
-        <label for="room-name-input">Have an invitation key? Paste it below.</label>
+        <label for="invitation-key-input">Have an invitation key? Paste it below.</label>
         <br>
-        <input id="room-name-input" class="form-control" type="text" size="100" required><br>
+        <input id="invitation-key-input" class="form-control" type="text" size="100" required><br>
         <button class="btn btn-primary" type="submit">Join</button>
     </form>
 
     <script>
-        // Fetch all the forms we want to apply custom Bootstrap validation styles to.
-        let forms = document.querySelectorAll('.needs-validation')
-
-        // Loop over them and prevent submission.
-        Array.prototype.slice.call(forms)
-            .forEach(function (form) {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault()
-                        event.stopPropagation()
-                    }
-                    form.classList.add('was-validated')
-                }, false)
-            })
-
-        /**
-         * Redirects to room specified in input field.
-         */
+        // Redirects to room specified in input field.
         function redirectToRoom() {
-            const room_name = document.querySelector('#room-name-input').value;
-            window.location.pathname = '/room/' + room_name + '/';
+            const invitationKey = document.querySelector('#invitation-key-input').value;
+            window.location.pathname = '/join/' + invitationKey + '/';
         }
     </script>
 {% endblock %}
