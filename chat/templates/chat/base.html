@@ -25,13 +25,13 @@
 
 </head>
 <body>
-<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top px-3">
     <a class="navbar-brand" href="#"><i class="fas fa-comments"></i> CHAT APP</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" aria-expanded="false">
         <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse">
+    <div class="collapse navbar-collapse justify-content-between">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
                 <a class="nav-link" href={% url 'home' %}>Home <span class="sr-only">(current)</span></a>
@@ -43,14 +43,16 @@
                 <a class="nav-link" href={% url 'room' room_name='test' %}>Room 'test'</a>
             </li>
         </ul>
-        {% if user.is_authenticated %}
-            <button class="btn btn-secondary disabled mr-1">
-                <span class="text-white">{{ user.username }}</span>
-            </button>
-            <a class="btn btn-primary" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        {% else %}
-            <a class="btn btn-primary" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
-        {% endif %}
+        <div>
+            {% if user.is_authenticated %}
+                <button class="btn btn-secondary disabled mr-1">
+                    <span class="text-white">{{ user.username }}</span>
+                </button>
+                <a class="btn btn-primary" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            {% else %}
+                <a class="btn btn-primary" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
+            {% endif %}
+        </div>
     </div>
 </nav>
 

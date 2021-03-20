@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -51,18 +53,18 @@ def login_view(request):
             # Check if user has been authenticated.
             if user is not None:
                 login(request, user)  # Login user on success.
-                messages.success(request, 'Logged in successfully.')  # Display message to user.
+                messages.success(request, 'Logged in successfully.')
                 return redirect('lobby')  # Redirect to lobby.
             else:
-                messages.warning(request, 'You need to login first.')  # Display message to user.
+                messages.warning(request, 'You need to login first.')
         else:
-            messages.warning(request, 'Something went wrong, try again.')  # Display message to user.
+            messages.warning(request, 'Something went wrong, try again.')
 
     # Display login form.
     else:
         # Check if user has been redirected from login-required view.
         if request.GET.get('next') is not None:
-            messages.warning(request, 'You need to login first.')  # Display message to user.
+            messages.warning(request, 'You need to login first.')
 
         # Create empty form to be passed in context.
         form = UserLoginForm()
@@ -89,7 +91,7 @@ class RoomView(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         # Check if user is not authenticated.
         if not request.user.is_authenticated:
-            messages.warning(request, 'You need to login first.')  # Display message to user.
+            messages.warning(request, 'You need to login first.')
             redirect('login')  # Redirect to login page.
 
         room_name = self.kwargs['room_name']  # Chat room name.
@@ -134,19 +136,37 @@ class JoinRoomView(LoginRequiredMixin, DetailView):
         # Invitation key parameter.
         invitation_key = self.kwargs['invitation_key']
         if not invitation_key:
-            messages.warning(request, 'Missing invitation key.')
+            messages.warning(request, 'Key is missing.')
             return redirect('lobby')
 
         # Invitation key object from database.
         key_object = InvitationKey.objects.filter(key=invitation_key).first()
         if not key_object:
-            messages.warning(request, 'Invalid invitation key.')
+            messages.warning(request, 'Key is invalid.')
+            return redirect('lobby')
+
+        # Check if key date is valid (hasn't expired).
+        if key_object.valid_due.date() < date.today():
+            messages.warning(request, 'Key has expired.')
             return redirect('lobby')
 
         # Name of the room associated with the key.
         room_name = key_object.room.name
         if not room_name:
-            messages.warning(request, 'Room does not exist anymore.')
+            messages.warning(request, 'Room this key was made for does not exist.')
             return redirect('lobby')
+
+        # If invitation key was created only for specific user.
+        if key_object.only_for_this_user:
+            # If currently authenticated user matches with invitation's 'only_for_this_user' field.
+            if key_object.only_for_this_user == request.user:
+                key_object.room.users.add(request.user)  # Add user to room.
+                key_object.delete()  # Delete invitation key.
+            else:
+                messages.warning(request, 'Key is not yours.')
+                return redirect('lobby')
+        # If invitation key was created for anyone.
+        else:
+            key_object.room.users.add(request.user)  # Add user to room.
 
         return redirect('room', room_name=room_name)

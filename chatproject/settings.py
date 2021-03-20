@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 
     # Django apps.
     'chat',
+    'api'
 ]
 
 MIDDLEWARE = [
@@ -123,19 +124,22 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR.joinpath('static')
-STATICFILES_DIRS = [
-    BASE_DIR.joinpath('static')
-]
+# STATICFILES_DIRS = [
+#     BASE_DIR.joinpath('static')
+# ]
 
 # SCSS.
 
 STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder'
 ]
 
 COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
+
 
 # Django channels.
 
@@ -153,3 +157,11 @@ CHANNEL_LAYERS = {
 # Django Crispy Forms.
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+# Django Rest framework.
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}

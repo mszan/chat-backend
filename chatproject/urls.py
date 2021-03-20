@@ -5,6 +5,9 @@ urlpatterns = [
     # Chat app urls.
     path('', include('chat.urls')),
 
+    # API app urls.
+    path('api/', include('api.urls')),
+
     # Admin.
     path('admin/', admin.site.urls),
 
