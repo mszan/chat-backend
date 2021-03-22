@@ -10,6 +10,7 @@ class Room(models.Model):
     """
     name = models.TextField(max_length=50)  # Room name.
     active = models.BooleanField(default=True)  # Allow users to join the room.
+    creator = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     admins = models.ManyToManyField(  # Administrator users.
         settings.AUTH_USER_MODEL,
         default=None,
