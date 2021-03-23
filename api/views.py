@@ -14,6 +14,3 @@ class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
     permission_classes = [permissions.IsAdminUser]
-
-    def perform_create(self, serializer):
-        serializer.save(creator=self.request.user)
