@@ -33,15 +33,20 @@
 
     <div class="collapse navbar-collapse justify-content-between">
         <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-                <a class="nav-link" href={% url 'home' %}>Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href={% url 'lobby' %}>Lobby</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href={% url 'room' room_name='test' %}>Room 'test'</a>
-            </li>
+            {% with url_name=request.resolver_match.url_name %}
+                <li class="nav-item {% if url_name == 'home' %}active{% endif %}">
+                    <a class="nav-link" href={% url 'home' %}>Home</a>
+                </li>
+                <li class="nav-item {% if url_name == 'lobby' %}active{% endif %}">
+                    <a class="nav-link" href={% url 'lobby' %}>Join</a>
+                </li>
+                <li class="nav-item {% if url_name == 'room-create' %}active{% endif %}">
+                    <a class="nav-link" href={% url 'room-create' %}>Create</a>
+                </li>
+                <li class="nav-item {% if url_name == 'room' %}active{% endif %}">
+                    <a class="nav-link" href={% url 'room' room_name='test' %}>Room 'test'</a>
+                </li>
+            {% endwith %}
         </ul>
         <div>
             {% if user.is_authenticated %}

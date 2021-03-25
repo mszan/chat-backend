@@ -8,7 +8,7 @@ class Room(models.Model):
     """
     Room model that holds associated messages and users.
     """
-    name = models.TextField(max_length=50)  # Room name.
+    name = models.TextField(max_length=50, unique=True)  # Room name.
     active = models.BooleanField(default=True)  # Allow users to join the room.
     creator = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     admins = models.ManyToManyField(  # Administrator users.

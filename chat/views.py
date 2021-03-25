@@ -7,7 +7,7 @@ from django.core import serializers
 from django.shortcuts import render, redirect
 from django.views.generic import DetailView, TemplateView
 
-from chat.forms import UserLoginForm
+from chat.forms import UserLoginForm, RoomCreateForm
 from chat.models import Message, Room, InvitationKey
 
 
@@ -35,7 +35,7 @@ def login_view(request):
     Logins user on POST, displays login form on GET.
     """
 
-    # Check if user is already logged in.
+    # If user is already logged in.
     if request.user.is_authenticated:
         redirect('lobby')
 
@@ -44,13 +44,13 @@ def login_view(request):
         # Get passed login form.
         form = UserLoginForm(request, data=request.POST)
 
-        # Check if passed form is valid.
+        # If passed form is valid.
         if form.is_valid():
             username = form.cleaned_data.get('username')  # Get username from passed form.
             password = form.cleaned_data.get('password')  # Get password from passed form.
             user = authenticate(request, username=username, password=password)  # Try to authenticate user.
 
-            # Check if user has been authenticated.
+            # If user has been authenticated.
             if user is not None:
                 login(request, user)  # Login user on success.
                 messages.success(request, 'Logged in successfully.')
@@ -62,7 +62,7 @@ def login_view(request):
 
     # Display login form.
     else:
-        # Check if user has been redirected from login-required view.
+        # If user has been redirected from login-required view.
         if request.GET.get('next') is not None:
             messages.warning(request, 'You need to login first.')
 
@@ -89,28 +89,27 @@ class RoomView(LoginRequiredMixin, DetailView):
     login_url = '/login/'
 
     def get(self, request, *args, **kwargs):
-        # Check if user is not authenticated.
+        # If user is not authenticated.
         if not request.user.is_authenticated:
             messages.warning(request, 'You need to login first.')
-            redirect('login')  # Redirect to login page.
+            return redirect('login')  # Redirect to login page.
 
         room_name = self.kwargs['room_name']  # Chat room name.
 
-        # Check if room object exists in database.
+        # If room object exists in database.
         if Room.objects.filter(name=room_name).exists():
             room_object = Room.objects.get(name=room_name)  # Room object instance.
 
-            # Check if user is allowed to join the room.
+            # If user is allowed to join the room.
             if request.user not in room_object.users.all():
                 # If user is not allowed, display a message and redirect to lobby.
                 messages.warning(request, f'You do not have access to room <strong>{room_name}</strong>.')
                 return redirect('lobby')
         # If room doesn't exist.
         else:
-            room_object = Room(name=room_name)  # Create new room object.
-            room_object.save()  # Save created object to database.
-            room_object.users.add(request.user)  # Add user to room users field.
-            room_object.admins.add(request.user)  # Add creator to room admins field.
+            # Redirect to room creation view.
+            messages.warning(request, f'The room does not exist.')
+            return redirect('room-create')
 
         # Parse last (previous) messages from database and serialize them.
         last_messages = serializers.serialize(
@@ -126,33 +125,72 @@ class RoomView(LoginRequiredMixin, DetailView):
         })
 
 
-class JoinRoomView(LoginRequiredMixin, DetailView):
+class RoomCreateView(LoginRequiredMixin, DetailView):
     """
+    Displays a confirmation page where user can confirm he wants
+    to create a new room. Redirects to newly created room afterwards.
+    """
+    # model = Room
+    login_url = '/login'
+    model = Room
+
+    def get(self, request, *args, **kwargs):
+        """
+        Render room creation form and pass its data to POST.
+        """
+        room_create_form = RoomCreateForm()   # Create form instance.
+        return render(request, 'chat/room_create.html', {'room_create_form': room_create_form})
+
+    @staticmethod
+    def post(request, *args, **kwargs):
+        """
+        Create room object and redirect to room page.
+        """
+
+        room_name = request.POST['room_name']               # Get room name.
+        if not Room.objects.filter(name=room_name):         # Check if room object does not exist.
+            room_object = Room(name=room_name)              # Create new room object.
+            room_object.save()                              # Save created object to database.
+            room_object.users.add(request.user)             # Add user to room users field.
+            room_object.admins.add(request.user)            # Add creator to room admins field.
+            return redirect('room', room_name=room_name)    # Redirect to newly created room.
+        else:
+            messages.warning(request, f'Room {room_name} already exists. Please choose other room name.')
+            return redirect('room-create')
+
+
+class RoomJoinFromInvitationView(LoginRequiredMixin, DetailView):
+    """
+    Handles joining to room from key invitations.
     Redirects to specific room if invitation key is valid.
     """
     login_url = '/login/'
 
     def get(self, request, *args, **kwargs):
-        # Invitation key parameter.
+        # If invitation key parameter is passed.
         invitation_key = self.kwargs['invitation_key']
         if not invitation_key:
+            # If not, redirect to lobby with a message.
             messages.warning(request, 'Key is missing.')
             return redirect('lobby')
 
-        # Invitation key object from database.
+        # If key object exists in database.
         key_object = InvitationKey.objects.filter(key=invitation_key).first()
         if not key_object:
+            # If not, redirect to lobby with a message.
             messages.warning(request, 'Key is invalid.')
             return redirect('lobby')
 
-        # Check if key date is valid (hasn't expired).
+        # If key date is valid (hasn't expired).
         if key_object.valid_due.date() < date.today():
+            # If not, redirect to lobby with a message.
             messages.warning(request, 'Key has expired.')
             return redirect('lobby')
 
-        # Name of the room associated with the key.
+        # If room this key was made for exists.
         room_name = key_object.room.name
         if not room_name:
+            # If not, redirect to lobby with a message.
             messages.warning(request, 'Room this key was made for does not exist.')
             return redirect('lobby')
 

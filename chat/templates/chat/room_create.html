@@ -1,0 +1,19 @@
+{% extends 'chat/base.html' %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <h5>Want to create a new room?</h5>
+            <p>This room is going to be private. You will be able to invite others users afterwards.</p>
+            <form method="POST">
+                {% csrf_token %}
+                {{ room_create_form.room_name|as_crispy_field }}
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-plus"></i><span> Create room</span>
+                </button>
+            </form>
+
+        </div>
+    </div>
+{% endblock %}
