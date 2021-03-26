@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from chat.models import Message, Room, InvitationKey
+from chat.models import Message, Room, RoomInviteKey
 
 admin.site.register(Message)
 admin.site.register(Room)
-admin.site.register(InvitationKey)
+admin.site.register(RoomInviteKey)

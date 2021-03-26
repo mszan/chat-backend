@@ -1,10 +1,11 @@
 from django.contrib.auth.models import User
+from django.db.models import Q
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from chat.models import Room
-from .permissions import IsRoomAdminOrStaff, ActionBasedPermission
-from .serializers import UserSerializer, RoomSerializer
+from chat.models import Room, RoomInviteKey
+from .permissions import IsRoomAdminOrStaff, ActionBasedPermission, IsInviteKeyCreatorOrRoomAdminOrStaff
+from .serializers import UserSerializer, RoomSerializer, RoomInviteKeySerializer
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -42,4 +43,34 @@ class RoomViewSet(viewsets.ModelViewSet):
 
         serializer_context = {'request': request}   # HyperlinkedIdentityField requires serializer context to be passed.
         serializer = RoomSerializer(queryset, many=True, context=serializer_context)
+        return Response(serializer.data)
+
+
+class RoomInviteKeyViewSet(viewsets.ModelViewSet):
+    """
+    View for displaying, creating and deleting room invite key objects.
+    """
+    queryset = RoomInviteKey.objects.all()
+    serializer_class = RoomInviteKeySerializer
+    permission_classes = [ActionBasedPermission]
+    action_permissions = {
+        permissions.IsAdminUser: ['destroy'],
+        permissions.IsAuthenticated: ['list'],
+        IsInviteKeyCreatorOrRoomAdminOrStaff: ['create', 'update', 'partial_update', 'retrieve']
+    }
+
+    def list(self, request, *args, **kwargs):
+        """
+        Overrides list view.
+        If user is staff, it returns all invite key objects.
+        If user is NOT staff, it returns all invite key objects user created.
+        """
+        if request.user.is_staff:
+            queryset = RoomInviteKey.objects.all()
+        else:
+            queryset = RoomInviteKey.objects.filter(
+                Q(creator=self.request.user) | Q(room__admins__in=[self.request.user])
+            )
+        serializer_context = {'request': request}   # HyperlinkedIdentityField requires serializer context to be passed.
+        serializer = RoomInviteKeySerializer(queryset, many=True, context=serializer_context)
         return Response(serializer.data)

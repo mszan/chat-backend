@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import DetailView, TemplateView
 
 from chat.forms import UserLoginForm, RoomCreateForm
-from chat.models import Message, Room, InvitationKey
+from chat.models import Message, Room, RoomInviteKey
 
 
 class HomeView(TemplateView):
@@ -147,35 +147,35 @@ class RoomCreateView(LoginRequiredMixin, DetailView):
         Create room object and redirect to room page.
         """
 
-        room_name = request.POST['room_name']               # Get room name.
-        if not Room.objects.filter(name=room_name):         # Check if room object does not exist.
-            room_object = Room(name=room_name)              # Create new room object.
-            room_object.save()                              # Save created object to database.
-            room_object.users.add(request.user)             # Add user to room users field.
-            room_object.admins.add(request.user)            # Add creator to room admins field.
-            return redirect('room', room_name=room_name)    # Redirect to newly created room.
+        room_name = request.POST['room_name']                           # Get room name.
+        if not Room.objects.filter(name=room_name):                     # Check if room object does not exist.
+            room_object = Room(name=room_name, creator=request.user)    # Create new room object.
+            room_object.save()                                          # Save created object to database.
+            room_object.users.add(request.user)                         # Add user to room users field.
+            room_object.admins.add(request.user)                        # Add creator to room admins field.
+            return redirect('room', room_name=room_name)                # Redirect to newly created room.
         else:
             messages.warning(request, f'Room {room_name} already exists. Please choose other room name.')
             return redirect('room-create')
 
 
-class RoomJoinFromInvitationView(LoginRequiredMixin, DetailView):
+class RoomJoinFromInviteView(LoginRequiredMixin, DetailView):
     """
-    Handles joining to room from key invitations.
-    Redirects to specific room if invitation key is valid.
+    Handles joining to room from key invites.
+    Redirects to specific room if invite key is valid.
     """
     login_url = '/login/'
 
     def get(self, request, *args, **kwargs):
-        # If invitation key parameter is passed.
-        invitation_key = self.kwargs['invitation_key']
-        if not invitation_key:
+        # If invite key parameter is passed.
+        invite_key = self.kwargs['invite_key']
+        if not invite_key:
             # If not, redirect to lobby with a message.
             messages.warning(request, 'Key is missing.')
             return redirect('lobby')
 
         # If key object exists in database.
-        key_object = InvitationKey.objects.filter(key=invitation_key).first()
+        key_object = RoomInviteKey.objects.filter(key=invite_key).first()
         if not key_object:
             # If not, redirect to lobby with a message.
             messages.warning(request, 'Key is invalid.')
@@ -194,16 +194,16 @@ class RoomJoinFromInvitationView(LoginRequiredMixin, DetailView):
             messages.warning(request, 'Room this key was made for does not exist.')
             return redirect('lobby')
 
-        # If invitation key was created only for specific user.
+        # If invite key was created only for specific user.
         if key_object.only_for_this_user:
-            # If currently authenticated user matches with invitation's 'only_for_this_user' field.
+            # If currently authenticated user matches with invite's 'only_for_this_user' field.
             if key_object.only_for_this_user == request.user:
                 key_object.room.users.add(request.user)  # Add user to room.
-                key_object.delete()  # Delete invitation key.
+                key_object.delete()  # Delete invite key.
             else:
                 messages.warning(request, 'Key is not yours.')
                 return redirect('lobby')
-        # If invitation key was created for anyone.
+        # If invite key was created for anyone.
         else:
             key_object.room.users.add(request.user)  # Add user to room.
 

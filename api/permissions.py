@@ -26,3 +26,22 @@ class IsRoomAdminOrStaff(permissions.IsAuthenticated):
 
         # Check if user is room admin and if so, allow.
         return request.user in obj.admins.all()
+
+
+class IsInviteKeyCreatorOrRoomAdminOrStaff(permissions.IsAuthenticated):
+    """
+    Custom permission to allow only invite key creators
+    or invite key's room administrators to access them.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        # If user is staff, allow.
+        if request.user.is_staff:
+            return True
+
+        # Check if user is room admin and if so, allow.
+        if request.user in obj.room.admins.all():
+            return True
+
+        # Check if user is key creator and if so, allow.
+        return request.user in obj.room.creator
