@@ -1,3 +1,6 @@
+import random
+import string
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
@@ -39,7 +42,14 @@ class Message(models.Model):
         return f'Message | id:{self.id}'
 
 
-def get_inivitation_key_expire_date():
+def get_invite_key_string():
+    """
+    :returns: Random and unique string of random characters.
+    """
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=20))
+
+
+def get_inivite_key_expire_date():
     """
     :returns: Room invite key expire date.
     """
@@ -50,8 +60,8 @@ class RoomInviteKey(models.Model):
     """
     Room invite key model that holds access keys for rooms.
     """
-    key = models.TextField(null=False, unique=True)                             # Invite key itself.
-    creator = models.ForeignKey(                                                # User who created this key.
+    key = models.TextField(null=False, unique=True, default=get_invite_key_string)  # Invite key string.
+    creator = models.ForeignKey(                                                    # User who created this key.
         User,
         null=True,
         on_delete=models.SET_NULL,
@@ -66,7 +76,7 @@ class RoomInviteKey(models.Model):
         blank=True,
         related_name='roominvitekey_only_for_this_user'
     )
-    valid_due = models.DateTimeField(default=get_inivitation_key_expire_date)   # Valid until.
+    valid_due = models.DateTimeField(default=get_inivite_key_expire_date)       # Valid until.
     give_admin = models.BooleanField(default=False)                             # Give admin to this user if true.
 
     def __str__(self):

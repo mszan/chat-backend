@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('key', models.TextField(unique=True)),
-                ('valid_due', models.DateTimeField(default=chat.models.get_inivitation_key_expire_date)),
+                ('valid_due', models.DateTimeField(default=chat.models.get_inivite_key_expire_date)),
                 ('give_admin', models.BooleanField(default=False)),
                 ('only_for_this_user', models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE,
                                                          to=settings.AUTH_USER_MODEL)),

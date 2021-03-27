@@ -2,6 +2,14 @@ from rest_framework import permissions
 from rest_framework.permissions import AllowAny
 
 
+class RejectAll(permissions.BasePermission):
+    """
+    Reject access.
+    """
+    def has_permission(self, request, view):
+        return False
+
+
 class ActionBasedPermission(AllowAny):
     """
     Grant or deny access to a view, based on a request

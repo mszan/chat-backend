@@ -4,7 +4,7 @@ from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
 from chat.models import Room, RoomInviteKey
-from .permissions import IsRoomAdminOrStaff, ActionBasedPermission, IsInviteKeyCreatorOrRoomAdminOrStaff
+from .permissions import IsRoomAdminOrStaff, ActionBasedPermission, IsInviteKeyCreatorOrRoomAdminOrStaff, RejectAll
 from .serializers import UserSerializer, RoomSerializer, RoomInviteKeySerializer
 
 
@@ -50,13 +50,14 @@ class RoomInviteKeyViewSet(viewsets.ModelViewSet):
     """
     View for displaying, creating and deleting room invite key objects.
     """
-    queryset = RoomInviteKey.objects.all()
+    queryset = RoomInviteKey.objects.none()
     serializer_class = RoomInviteKeySerializer
     permission_classes = [ActionBasedPermission]
     action_permissions = {
         permissions.IsAdminUser: ['destroy'],
         permissions.IsAuthenticated: ['list'],
-        IsInviteKeyCreatorOrRoomAdminOrStaff: ['create', 'update', 'partial_update', 'retrieve']
+        IsInviteKeyCreatorOrRoomAdminOrStaff: ['create', 'retrieve'],
+        RejectAll: ['update', 'partial_update']
     }
 
     def list(self, request, *args, **kwargs):

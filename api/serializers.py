@@ -1,7 +1,5 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from rest_framework.fields import DateTimeField
-from rest_framework.relations import HyperlinkedRelatedField
 from rest_framework.validators import UniqueValidator
 
 from chat.models import Room, RoomInviteKey
@@ -57,7 +55,8 @@ class RoomInviteKeySerializer(serializers.HyperlinkedModelSerializer):
     Serializer associated with RoomInviteKey model.
     """
     key = serializers.CharField(
-        validators=[UniqueValidator(queryset=RoomInviteKey.objects.all())]
+        validators=[UniqueValidator(queryset=RoomInviteKey.objects.all())],
+        read_only=True
     )
     creator = serializers.HyperlinkedRelatedField(
         allow_null=True,
@@ -65,11 +64,11 @@ class RoomInviteKeySerializer(serializers.HyperlinkedModelSerializer):
         view_name='user-detail',
         read_only=True
     )
-    # room = serializers.HyperlinkedRelatedField(
-    #     required=False,
-    #     view_name='room-detail',
-    #     read_only=True
-    # ) TODO: Make this read_only.
+    room = serializers.HyperlinkedRelatedField(
+        queryset=Room.objects.none(),
+        required=False,
+        view_name='room-detail'
+    )
     valid_due = serializers.DateTimeField(
         required=False,
         read_only=True
@@ -77,15 +76,29 @@ class RoomInviteKeySerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = RoomInviteKey
-        fields = ['id', 'key', 'creator', 'room', 'only_for_this_user', 'valid_due', 'give_admin']
+        fields = ['url', 'id', 'key', 'creator', 'room', 'only_for_this_user', 'valid_due', 'give_admin']
+
+    def get_fields(self):
+        """
+        Overrides queryset for 'room' field.
+        """
+        fields = super(RoomInviteKeySerializer, self).get_fields()
+
+        # If user is admin, return all Room objects.
+        if self.context['request'].user.is_staff:
+            fields['room'].queryset = Room.objects.all()
+        # Else, return Room objects request user is admin in.
+        else:
+            fields['room'].queryset = Room.objects.filter(admins__in=[self.context['request'].user])
+        return fields
 
     def create(self, validated_data):
         """
         Overrides creation of new object.
         Sets creator field.
         """
-        obj = RoomInviteKey.objects.create(**validated_data)  # Create new object with validated data.
         request_user = self.context['request'].user           # Get request user object.
+        obj = RoomInviteKey.objects.create(**validated_data)  # Create new object with validated data.
         obj.creator = request_user                            # Add request user to creator field.
         obj.save()                                            # Save instance.
         return obj
