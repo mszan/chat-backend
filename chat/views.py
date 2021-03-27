@@ -130,7 +130,6 @@ class RoomCreateView(LoginRequiredMixin, DetailView):
     Displays a confirmation page where user can confirm he wants
     to create a new room. Redirects to newly created room afterwards.
     """
-    # model = Room
     login_url = '/login'
     model = Room
 
@@ -147,7 +146,7 @@ class RoomCreateView(LoginRequiredMixin, DetailView):
         Create room object and redirect to room page.
         """
 
-        room_name = request.POST['room_name']                           # Get room name.
+        room_name = request.POST['room_name']  # Get room name.
         if not Room.objects.filter(name=room_name):                     # Check if room object does not exist.
             room_object = Room(name=room_name, creator=request.user)    # Create new room object.
             room_object.save()                                          # Save created object to database.

@@ -50,7 +50,7 @@ class RoomInviteKeyViewSet(viewsets.ModelViewSet):
     """
     View for displaying, creating and deleting room invite key objects.
     """
-    queryset = RoomInviteKey.objects.none()
+    queryset = RoomInviteKey.objects.all()
     serializer_class = RoomInviteKeySerializer
     permission_classes = [ActionBasedPermission]
     action_permissions = {
@@ -63,12 +63,11 @@ class RoomInviteKeyViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         """
         Overrides list view.
-        If user is staff, it returns all invite key objects.
-        If user is NOT staff, it returns all invite key objects user created.
+        If user is NOT staff, it displays all invite key objects user created.
+        If user is staff, it displays all invite key objects.
         """
-        if request.user.is_staff:
-            queryset = RoomInviteKey.objects.all()
-        else:
+        queryset = self.queryset
+        if not request.user.is_staff:
             queryset = RoomInviteKey.objects.filter(
                 Q(creator=self.request.user) | Q(room__admins__in=[self.request.user])
             )
