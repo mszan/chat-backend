@@ -1,16 +1,15 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from chat.models import Room, RoomInviteKey
+from api.models import Room, RoomInviteKey, CustomUser
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class CustomUserSerializer(serializers.HyperlinkedModelSerializer):
     """
     Serializer associated with built-in User model.
     """
     class Meta:
-        model = User
+        model = CustomUser
         fields = ['url', 'username', 'room_admins', 'room_users']
 
 

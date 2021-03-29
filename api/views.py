@@ -1,19 +1,18 @@
-from django.contrib.auth.models import User
 from django.db.models import Q
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from chat.models import Room, RoomInviteKey
+from api.models import Room, RoomInviteKey, CustomUser
 from .permissions import IsRoomAdminOrStaff, ActionBasedPermission, IsInviteKeyCreatorOrRoomAdminOrStaff, RejectAll
-from .serializers import UserSerializer, RoomSerializer, RoomInviteKeySerializer
+from .serializers import CustomUserSerializer, RoomSerializer, RoomInviteKeySerializer
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     ViewSet for displaying User objects.
     """
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
     permission_classes = [permissions.IsAdminUser]
 
 
