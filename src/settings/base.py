@@ -16,13 +16,18 @@ INSTALLED_APPS = [
     'django.contrib.admindocs',
 
     # Third-party libraries.
-    'rest_framework',
+    'rest_framework',   # Django Rest Framework.
+    'corsheaders',      # Django Cors Headers.
 
     # Django apps.
     'api'
 ]
 
 MIDDLEWARE = [
+    # Django Cors Headers.
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -30,6 +35,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'src.urls'
