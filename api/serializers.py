@@ -23,7 +23,7 @@ class RoomSerializer(serializers.HyperlinkedModelSerializer):
     creator = serializers.HyperlinkedRelatedField(
         allow_null=True,
         required=False,
-        view_name='user-detail',
+        view_name='customuser-detail',
         read_only=True
     )
 
@@ -60,7 +60,7 @@ class RoomInviteKeySerializer(serializers.HyperlinkedModelSerializer):
     creator = serializers.HyperlinkedRelatedField(
         allow_null=True,
         required=False,
-        view_name='user-detail',
+        view_name='customuser-detail',
         read_only=True
     )
     room = serializers.HyperlinkedRelatedField(

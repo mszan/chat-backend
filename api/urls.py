@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshVie
 from . import views
 
 router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
+router.register(r'users', views.CustomUserViewSet)
 router.register(r'rooms', views.RoomViewSet)
 router.register(r'room-invite-keys', views.RoomInviteKeyViewSet)
 

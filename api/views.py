@@ -7,7 +7,7 @@ from .permissions import IsRoomAdminOrStaff, ActionBasedPermission, IsInviteKeyC
 from .serializers import CustomUserSerializer, RoomSerializer, RoomInviteKeySerializer
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class CustomUserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     ViewSet for displaying User objects.
     """
