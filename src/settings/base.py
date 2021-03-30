@@ -17,6 +17,7 @@ INSTALLED_APPS = [
 
     # Third-party libraries.
     'rest_framework',   # Django Rest Framework.
+    'drf_api_logger',   # Django Rest Framework Logger.
     'corsheaders',      # Django Cors Headers.
 
     # Django apps.
@@ -36,6 +37,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
+    # Django Rest Framework Logger.
+    'drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware',
 ]
 
 ROOT_URLCONF = 'src.urls'
@@ -110,7 +113,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR.joinpath('static')
 
-# Django Rest framework.
+# Django Rest Framework.
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -122,3 +125,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
 }
+
+# Django Rest Framework Logger.
+DRF_API_LOGGER_DATABASE = True    # Enable logging into database table.
