@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from api.models import Room, RoomInviteKey, CustomUser
+from api.models import Room, RoomInviteKey, CustomUser, Message
 
 
 class CustomUserSerializer(serializers.HyperlinkedModelSerializer):
@@ -11,6 +11,52 @@ class CustomUserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['url', 'username', 'room_admins', 'room_users']
+
+
+class MessageSerializer(serializers.HyperlinkedModelSerializer):
+    """
+    Serializer associated with Message model.
+    """
+    user = serializers.SlugRelatedField(
+        allow_null=True,
+        required=False,
+        read_only=True,
+        slug_field='username'
+    )
+    room = serializers.HyperlinkedRelatedField(
+        queryset=Room.objects.none(),
+        required=False,
+        view_name='room-detail'
+    )
+
+    class Meta:
+        model = Message
+        fields = ['id', 'room', 'user', 'text', 'timestamp']
+
+    def get_fields(self):
+        """
+        Overrides queryset for 'room' field.
+        """
+        fields = super(MessageSerializer, self).get_fields()
+
+        # If user is admin, return all Room objects.
+        if self.context['request'].user.is_staff:
+            fields['room'].queryset = Room.objects.all()
+        # Else, return Room objects request user participate in.
+        else:
+            fields['room'].queryset = Room.objects.filter(users__in=[self.context['request'].user])
+        return fields
+
+    def create(self, validated_data):
+        """
+        Overrides creation of new object.
+        Sets fields such as room and user.
+        """
+        obj = Message.objects.create(**validated_data)  # Create new object with validated data.
+        request_user = self.context['request'].user  # Get request user object.
+        obj.user = request_user  # Add request user to creator.
+        obj.save()  # Save instance.
+        return obj
 
 
 class RoomSerializer(serializers.HyperlinkedModelSerializer):
@@ -29,6 +75,10 @@ class RoomSerializer(serializers.HyperlinkedModelSerializer):
         view_name='customuser-detail',
         read_only=True
     )
+    messages = MessageSerializer(
+        required=False,
+        many=True
+    )
 
     def __init__(self, *args, **kwargs):
         # Instantiate the superclass normally
@@ -45,7 +95,7 @@ class RoomSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Room
-        fields = ['url', 'name', 'active', 'creator', 'admins', 'users']
+        fields = ['id', 'url', 'name', 'active', 'creator', 'timestamp', 'admins', 'users', 'messages']
 
     def create(self, validated_data):
         """

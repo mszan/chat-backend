@@ -8,6 +8,7 @@ router = routers.DefaultRouter()
 router.register(r'users', views.CustomUserViewSet)
 router.register(r'rooms', views.RoomViewSet)
 router.register(r'room-invite-keys', views.RoomInviteKeyViewSet)
+router.register(r'messages', views.MessageViewSet)
 
 urlpatterns = [
     path('', include('rest_framework.urls')),

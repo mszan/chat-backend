@@ -1,10 +1,10 @@
 from django.db.models import Q
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 
-from api.models import Room, RoomInviteKey, CustomUser
+from api.models import Room, RoomInviteKey, CustomUser, Message
 from .permissions import IsRoomAdminOrStaff, ActionBasedPermission, IsInviteKeyCreatorOrRoomAdminOrStaff, RejectAll
-from .serializers import CustomUserSerializer, RoomSerializer, RoomInviteKeySerializer
+from .serializers import CustomUserSerializer, RoomSerializer, RoomInviteKeySerializer, MessageSerializer
 
 
 class CustomUserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -72,4 +72,39 @@ class RoomInviteKeyViewSet(viewsets.ModelViewSet):
             )
         serializer_context = {'request': request}   # HyperlinkedIdentityField requires serializer context to be passed.
         serializer = RoomInviteKeySerializer(queryset, many=True, context=serializer_context)
+        return Response(serializer.data)
+
+
+class MessageViewSet(viewsets.ModelViewSet):
+    """
+    View for displaying and creating room messages.
+    By default, it returns empty queryset. To retrieve messages, parameter 'room_id' must be passed.
+    """
+    queryset = Message.objects.none()
+    serializer_class = MessageSerializer
+    permission_classes = [ActionBasedPermission]
+    action_permissions = {
+        permissions.IsAdminUser: ['destroy'],
+        permissions.IsAuthenticated: ['list', 'create', 'retrieve'],
+        RejectAll: ['update', 'partial_update']
+    }
+
+    def list(self, request, *args, **kwargs):
+        """
+        Overrides list view to return messages related with room_id parameter.
+        """
+        room_id = self.request.query_params.get('room_id')
+
+        if room_id:
+            queryset = Message.objects.filter(room_id=room_id)
+        else:
+            return Response("Parameter 'room_id' missing.", status.HTTP_400_BAD_REQUEST)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer_context = {'request': request}   # HyperlinkedIdentityField requires serializer context to be passed.
+        serializer = MessageSerializer(queryset, many=True, context=serializer_context)
         return Response(serializer.data)

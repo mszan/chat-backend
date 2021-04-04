@@ -25,6 +25,9 @@ class Room(models.Model):
     # Allow users to join the room.
     active = models.BooleanField(default=True)
 
+    # Time room was created.
+    timestamp = models.DateTimeField(auto_now_add=True)
+
     # User who created this room.
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
 
@@ -42,9 +45,11 @@ class Message(models.Model):
     """
     Message model that holds user messages.
     """
+    class Meta:
+        ordering = ['timestamp']
 
     # Room the message is in.
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, default=None)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, default=None, related_name='messages')
 
     # User that sent the message.
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
