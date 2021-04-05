@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'rest_framework',   # Django Rest Framework.
     'drf_api_logger',   # Django Rest Framework Logger.
     'corsheaders',      # Django Cors Headers.
+    'channels',          # Django Channels.
 
     # Django apps.
     'api'
@@ -61,8 +62,6 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = 'src.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -126,8 +125,22 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 50
 }
 
 # Django Rest Framework Logger.
+
 DRF_API_LOGGER_DATABASE = True    # Enable logging into database table.
+
+# Django Channels.
+
+ASGI_APPLICATION = "api.asgi.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
