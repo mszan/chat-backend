@@ -3,7 +3,7 @@ import json
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
-from api.models import Message, Room
+from api.models import Message, Room, CustomUser
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -14,8 +14,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         print('connected')
-        self.room_group_name = f'room_{self.room_id}'
         self.room_id = self.scope['url_route']['kwargs']['room_id']
+        self.room_group_name = f'room_{self.room_id}'
 
         # Join room group.
         await self.channel_layer.group_add(
@@ -41,12 +41,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         username = text_data_json['username']
 
         # Save message to database.
-        await self.save_message(message)
+        await self.save_message(username, message)
 
         # Send message to room group
         await self.channel_layer.group_send(
-            self.room_group_name,
-            {
+            self.room_group_name, {
                 'type': 'room_message',
                 'message': message,
                 'username': username
@@ -70,10 +69,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Create message object in database.
     @database_sync_to_async
-    def save_message(self, message):
+    def save_message(self, username, message):
         print('save_message')
         Message.objects.create(
             room=Room.objects.get(id=self.room_id),  # Room object.
-            user=self.scope['user'],  # User object.
+            user=CustomUser.objects.get(username=username),  # User object.
             text=message,  # Message text content.
         )

@@ -16,6 +16,9 @@ class CustomUserSerializer(serializers.HyperlinkedModelSerializer):
 class MessageSerializer(serializers.HyperlinkedModelSerializer):
     """
     Serializer associated with Message model.
+
+    Takes an additional `fields` argument that
+    controls which fields should be displayed.
     """
     user = serializers.SlugRelatedField(
         allow_null=True,
@@ -32,6 +35,19 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Message
         fields = ['id', 'room', 'user', 'text', 'timestamp']
+
+    def __init__(self, *args, **kwargs):
+        # Instantiate the superclass normally
+        super(MessageSerializer, self).__init__(*args, **kwargs)
+
+        fields = self.context['request'].query_params.get('fields')
+        if fields:
+            fields = fields.split(',')
+            # Drop any fields that are not specified in the `fields` argument.
+            allowed = set(fields)
+            existing = set(self.fields.keys())
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
 
     def get_fields(self):
         """
@@ -75,10 +91,6 @@ class RoomSerializer(serializers.HyperlinkedModelSerializer):
         view_name='customuser-detail',
         read_only=True
     )
-    messages = MessageSerializer(
-        required=False,
-        many=True
-    )
 
     def __init__(self, *args, **kwargs):
         # Instantiate the superclass normally
@@ -95,7 +107,7 @@ class RoomSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Room
-        fields = ['id', 'url', 'name', 'active', 'creator', 'timestamp', 'admins', 'users', 'messages']
+        fields = ['id', 'url', 'name', 'active', 'creator', 'timestamp', 'admins', 'users']
 
     def create(self, validated_data):
         """

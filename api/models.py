@@ -46,7 +46,7 @@ class Message(models.Model):
     Message model that holds user messages.
     """
     class Meta:
-        ordering = ['timestamp']
+        ordering = ['-timestamp']
 
     # Room the message is in.
     room = models.ForeignKey(Room, on_delete=models.CASCADE, default=None, related_name='messages')
