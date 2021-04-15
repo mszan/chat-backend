@@ -1,5 +1,4 @@
 from rest_framework import permissions
-from rest_framework.permissions import AllowAny
 
 
 class RejectAll(permissions.BasePermission):
@@ -10,7 +9,7 @@ class RejectAll(permissions.BasePermission):
         return False
 
 
-class ActionBasedPermission(AllowAny):
+class ActionBasedPermission(permissions.AllowAny):
     """
     Grant or deny access to a view, based on a request
     type mapping in view.action_permissions.

@@ -1,5 +1,6 @@
 from django.db.models import Q
 from rest_framework import viewsets, permissions, status
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api.models import Room, RoomInviteKey, CustomUser, Message
@@ -13,7 +14,27 @@ class CustomUserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [ActionBasedPermission]
+    action_permissions = {
+        permissions.AllowAny: ['list'],
+        permissions.IsAdminUser: ['retrieve']
+    }
+    lookup_field = 'username'
+
+    def list(self, request, *args, **kwargs):
+        """
+        Overrides list view.
+        If user is staff, display all users.
+        If user is NOT staff, display only logged user.
+        """
+        if request.user.is_staff:
+            queryset = CustomUser.objects.all()
+        else:
+            queryset = CustomUser.objects.filter(username=self.request.user)
+
+        serializer_context = {'request': request}
+        serializer = CustomUserSerializer(queryset, many=True, context=serializer_context)
+        return Response(serializer.data)
 
 
 class RoomViewSet(viewsets.ModelViewSet):
@@ -40,7 +61,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         else:
             queryset = Room.objects.filter(admins__in=[self.request.user])
 
-        serializer_context = {'request': request}   # HyperlinkedIdentityField requires serializer context to be passed.
+        serializer_context = {'request': request}
         serializer = RoomSerializer(queryset, many=True, context=serializer_context)
         return Response(serializer.data)
 
@@ -70,7 +91,7 @@ class RoomInviteKeyViewSet(viewsets.ModelViewSet):
             queryset = RoomInviteKey.objects.filter(
                 Q(creator=self.request.user) | Q(room__admins__in=[self.request.user])
             )
-        serializer_context = {'request': request}   # HyperlinkedIdentityField requires serializer context to be passed.
+        serializer_context = {'request': request}
         serializer = RoomInviteKeySerializer(queryset, many=True, context=serializer_context)
         return Response(serializer.data)
 
@@ -105,6 +126,6 @@ class MessageViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
-        serializer_context = {'request': request}   # HyperlinkedIdentityField requires serializer context to be passed.
+        serializer_context = {'request': request}
         serializer = MessageSerializer(queryset, many=True, context=serializer_context)
         return Response(serializer.data)

@@ -4,16 +4,18 @@ from rest_framework.validators import UniqueValidator
 from api.models import Room, RoomInviteKey, CustomUser, Message
 
 
-class CustomUserSerializer(serializers.HyperlinkedModelSerializer):
+class CustomUserSerializer(serializers.ModelSerializer):
     """
     Serializer associated with built-in User model.
     """
+
     class Meta:
         model = CustomUser
-        fields = ['url', 'username', 'room_admins', 'room_users']
+        fields = ['id', 'username', 'room_admins', 'room_users']
+        lookup_field = 'username'
 
 
-class MessageSerializer(serializers.HyperlinkedModelSerializer):
+class MessageSerializer(serializers.ModelSerializer):
     """
     Serializer associated with Message model.
 
@@ -26,10 +28,10 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
         read_only=True,
         slug_field='username'
     )
-    room = serializers.HyperlinkedRelatedField(
+    room = serializers.PrimaryKeyRelatedField(
         queryset=Room.objects.none(),
         required=False,
-        view_name='room-detail'
+        # view_name='room-detail'
     )
 
     class Meta:
@@ -75,7 +77,7 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
         return obj
 
 
-class RoomSerializer(serializers.HyperlinkedModelSerializer):
+class RoomSerializer(serializers.ModelSerializer):
     """
     Serializer associated with Room model.
 
@@ -85,10 +87,27 @@ class RoomSerializer(serializers.HyperlinkedModelSerializer):
     active = serializers.BooleanField(
         required=False
     )
-    creator = serializers.HyperlinkedRelatedField(
+
+    creator = serializers.SlugRelatedField(
         allow_null=True,
         required=False,
-        view_name='customuser-detail',
+        slug_field='username',
+        read_only=True
+    )
+
+    admins = serializers.SlugRelatedField(
+        allow_null=True,
+        many=True,
+        required=False,
+        slug_field='username',
+        read_only=True
+    )
+
+    users = serializers.SlugRelatedField(
+        allow_null=True,
+        many=True,
+        required=False,
+        slug_field='username',
         read_only=True
     )
 
@@ -114,20 +133,21 @@ class RoomSerializer(serializers.HyperlinkedModelSerializer):
         Overrides creation of new object.
         Sets fields such as room_admins, room_users, creator.
         """
-        room_admins = validated_data.pop('admins')    # Pop due to *-* assignment.
-        room_users = validated_data.pop('users')      # Pop due to *-* assignment.
+
+        # room_admins = validated_data.pop('admins')    # Pop due to *-* assignment.
+        # room_users = validated_data.pop('users')      # Pop due to *-* assignment.
 
         obj = Room.objects.create(**validated_data)   # Create new object with validated data.
-        obj.admins.set(room_admins)                   # Add request user to admins.
-        obj.users.set(room_users)                     # Add request user to users.
 
         request_user = self.context['request'].user   # Get request user object.
         obj.creator = request_user                    # Add request user to creator.
+        obj.admins.set([request_user])                   # Add request user to admins.
+        obj.users.set([request_user])                     # Add request user to users.
         obj.save()                                    # Save instance.
         return obj
 
 
-class RoomInviteKeySerializer(serializers.HyperlinkedModelSerializer):
+class RoomInviteKeySerializer(serializers.ModelSerializer):
     """
     Serializer associated with RoomInviteKey model.
     """
@@ -135,16 +155,17 @@ class RoomInviteKeySerializer(serializers.HyperlinkedModelSerializer):
         validators=[UniqueValidator(queryset=RoomInviteKey.objects.all())],
         read_only=True
     )
-    creator = serializers.HyperlinkedRelatedField(
+    creator = serializers.SlugRelatedField(
         allow_null=True,
         required=False,
-        view_name='customuser-detail',
+        # view_name='customuser-detail',
+        slug_field='username',
         read_only=True
     )
-    room = serializers.HyperlinkedRelatedField(
+    room = serializers.PrimaryKeyRelatedField(
         queryset=Room.objects.none(),
         required=False,
-        view_name='room-detail'
+        # view_name='room-detail'
     )
     valid_due = serializers.DateTimeField(
         required=False,

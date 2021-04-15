@@ -16,10 +16,11 @@ INSTALLED_APPS = [
     'django.contrib.admindocs',
 
     # Third-party libraries.
-    'rest_framework',   # Django Rest Framework.
-    'drf_api_logger',   # Django Rest Framework Logger.
-    'corsheaders',      # Django Cors Headers.
-    'channels',          # Django Channels.
+    'rest_framework',       # Django Rest Framework.
+    'drf_api_logger',       # Django Rest Framework Logger.
+    'corsheaders',          # Django Cors Headers.
+    'channels',             # Django Channels.
+    'django_extensions',    # Django Extensions.
 
     # Django apps.
     'api'
