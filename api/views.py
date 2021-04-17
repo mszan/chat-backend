@@ -52,14 +52,10 @@ class RoomViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         """
-        Overrides list view.
-        If user is staff, it returns all Room objects.
-        If user is NOT staff, it returns all Room objects user has admin in.
+        Overrides list view to display rooms this user
+        participate in (user is in Room's 'users' field).
         """
-        if request.user.is_staff:
-            queryset = Room.objects.all()
-        else:
-            queryset = Room.objects.filter(admins__in=[self.request.user])
+        queryset = Room.objects.filter(users__in=[self.request.user])
 
         serializer_context = {'request': request}
         serializer = RoomSerializer(queryset, many=True, context=serializer_context)
