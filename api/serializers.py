@@ -171,10 +171,16 @@ class RoomInviteKeySerializer(serializers.ModelSerializer):
         required=False,
         read_only=True
     )
+    only_for_this_user = serializers.SlugRelatedField(
+        queryset=CustomUser.objects.all(),
+        allow_null=True,
+        required=False,
+        slug_field='username',
+    )
 
     class Meta:
         model = RoomInviteKey
-        fields = ['url', 'id', 'key', 'creator', 'room', 'only_for_this_user', 'valid_due', 'give_admin']
+        fields = ['id', 'key', 'creator', 'room', 'only_for_this_user', 'valid_due', 'give_admin']
 
     def get_fields(self):
         """
