@@ -20,7 +20,7 @@ class Room(models.Model):
     """
 
     # Unique room name.
-    name = models.TextField(max_length=50, unique=True)
+    name = models.TextField(max_length=50)
 
     # Allow users to join the room.
     active = models.BooleanField(default=True)
@@ -38,7 +38,7 @@ class Room(models.Model):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, default=None, related_name='room_users')
 
     def __str__(self):
-        return f'Room | name:{self.name}'
+        return f'Room | id: {self.id},  name:{self.name}'
 
 
 class Message(models.Model):
@@ -61,7 +61,7 @@ class Message(models.Model):
     text = models.TextField(null=False)
 
     def __str__(self):
-        return f'Message | id:{self.id}'
+        return f'Message | id:{self.id} text:{self.text}'
 
 
 def get_invite_key_string():
@@ -75,6 +75,9 @@ def get_inivite_key_expire_date():
     """
     :returns: Room invite key expire date.
     """
+    print(timezone.now())
+    print(timezone.timedelta(hours=2))
+    print(timezone.now() + timezone.timedelta(hours=2))
     return timezone.now() + timezone.timedelta(hours=2)  # Valid for 2 hours.
 
 
@@ -104,4 +107,4 @@ class RoomInviteKey(models.Model):
     give_admin = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'Key | id:{self.id}, key:{self.key}'
+        return f'Key | id:{self.id}, key:{self.key}, room: {self.room.id}'
