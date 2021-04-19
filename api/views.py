@@ -76,21 +76,16 @@ class RoomInviteKeyViewSet(viewsets.ModelViewSet):
         RejectAll: ['update', 'partial_update']
     }
 
-    def list(self, request, *args, **kwargs):
+    def get_queryset(self):
         """
-        Overrides list view.
-        If user is NOT staff, it displays all invite key objects user created.
-        If user is staff, it displays all invite key objects.
+        Optionally restricts the returned purchases to a given user,
+        by filtering against a `room_id` query parameter in the URL.
         """
-        queryset = self.queryset
-        if not request.user.is_staff:
-            queryset = RoomInviteKey.objects.filter(
-                Q(creator=self.request.user) | Q(room__admins__in=[self.request.user])
-            )
-        serializer_context = {'request': request}
-        serializer = RoomInviteKeySerializer(queryset, many=True, context=serializer_context)
-        return Response(serializer.data)
-
+        queryset = RoomInviteKey.objects.all()
+        room_id = self.request.query_params.get('room_id')
+        if room_id is not None:
+            queryset = queryset.filter(room_id=room_id)
+        return queryset
 
 class MessageViewSet(viewsets.ModelViewSet):
     """
