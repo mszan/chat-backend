@@ -2,9 +2,22 @@
 
 from .base import *
 
-DEBUG = True
+SECRET_KEY = "not_secret"
 
-ALLOWED_HOSTS = []
+DEBUG = 1
+
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'chat_backend',
+        'USER': 'chat_backend_user',
+        'PASSWORD': 'Test@1234',
+        'HOST': 'db',
+        'PORT': 5432,
+    }
+}
 
 # Django Rest Framework.
 
