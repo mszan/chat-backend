@@ -1,3 +1,6 @@
 /venv/
 /.idea/
 /static/CACHE/
+.DS_Store
+__pycache__/
+*.pyc
