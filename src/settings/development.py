@@ -14,7 +14,7 @@ DATABASES = {
         'NAME': 'chat_backend',
         'USER': 'chat_backend_user',
         'PASSWORD': 'Test@1234',
-        'HOST': 'db',
+        'HOST': 'localhost',
         'PORT': 5432,
     }
 }
