@@ -19,7 +19,6 @@ INSTALLED_APPS = [
     'drf_api_logger',       # Django Rest Framework Logger.
     'corsheaders',          # Django Cors Headers.
     'channels',             # Django Channels.
-    'django_extensions',    # Django Extensions.
 
     # Django apps.
     'api'

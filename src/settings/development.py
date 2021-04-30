@@ -2,6 +2,10 @@
 
 from .base import *
 
+INSTALLED_APPS += [
+    'django_extensions'
+]
+
 SECRET_KEY = "not_secret"
 
 DEBUG = 1
