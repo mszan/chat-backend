@@ -15,10 +15,10 @@ ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'chat_backend',
-        'USER': 'chat_backend_user',
-        'PASSWORD': 'Test@1234',
-        'HOST': 'localhost',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'postgres',
         'PORT': 5432,
     }
 }
