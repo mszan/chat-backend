@@ -13,7 +13,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_id = ''
 
     async def connect(self):
-        print('connected')
         self.room_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f'room_{self.room_id}'
 
@@ -26,7 +25,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        print('disconnected')
         # Leave room group.
         await self.channel_layer.group_discard(
             self.room_group_name,
@@ -35,7 +33,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Receive message from WebSocket.
     async def receive(self, text_data=None, bytes_data=None):
-        print('received')
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
         username = text_data_json['username']
@@ -54,7 +51,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Receive message from room group.
     async def room_message(self, event):
-        print('room_message')
         message = event['message']
         username = event['username']
 
@@ -70,7 +66,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Create message object in database.
     @database_sync_to_async
     def save_message(self, username, message):
-        print('save_message')
         Message.objects.create(
             room=Room.objects.get(id=self.room_id),  # Room object.
             user=CustomUser.objects.get(username=username),  # User object.
