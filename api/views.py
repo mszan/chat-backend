@@ -57,6 +57,13 @@ class RoomViewSet(viewsets.ModelViewSet):
         """
         queryset = Room.objects.filter(users__in=[self.request.user])
 
+        # Check for optional parameter 'active'.
+        only_active = self.request.query_params.get('active')
+        if only_active is not None:
+            # If its value equals 'true', filter only for active rooms.
+            if only_active.lower() == 'true':
+                queryset = queryset.filter(active=True)
+
         serializer_context = {'request': request}
         serializer = RoomSerializer(queryset, many=True, context=serializer_context)
         return Response(serializer.data)
@@ -86,6 +93,7 @@ class RoomInviteKeyViewSet(viewsets.ModelViewSet):
         if room_id is not None:
             queryset = queryset.filter(room_id=room_id)
         return queryset
+
 
 class MessageViewSet(viewsets.ModelViewSet):
     """
