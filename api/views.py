@@ -85,13 +85,20 @@ class RoomInviteKeyViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        Optionally restricts the returned purchases to a given user,
-        by filtering against a `room_id` query parameter in the URL.
+        Handle optional request parameters to filter the queryset.
         """
         queryset = RoomInviteKey.objects.all()
+
+        # Optional 'room_id' request parameter handling.
         room_id = self.request.query_params.get('room_id')
         if room_id is not None:
             queryset = queryset.filter(room_id=room_id)
+
+        # Optional 'key' request parameter handling.
+        key = self.request.query_params.get('key')
+        if key is not None:
+            queryset = queryset.filter(key=key)
+
         return queryset
 
 
