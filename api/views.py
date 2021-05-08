@@ -1,11 +1,14 @@
 from django.db.models import Q
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, generics
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api.models import Room, RoomInviteKey, CustomUser, Message
 from .permissions import IsRoomAdminOrStaff, ActionBasedPermission, IsInviteKeyCreatorOrRoomAdminOrStaff, RejectAll
 from .serializers import CustomUserSerializer, RoomSerializer, RoomInviteKeySerializer, MessageSerializer
+
+from django.utils import timezone
+import pytz
 
 
 class CustomUserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -135,3 +138,48 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer_context = {'request': request}
         serializer = MessageSerializer(queryset, many=True, context=serializer_context)
         return Response(serializer.data)
+
+
+class JoinRoomView(generics.GenericAPIView):
+    """
+    View for joining users to room objects.
+    """
+    queryset = Room.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        """
+        TODO: This may be an invalid request method. Anyway, it works for now.
+
+        Handles invitations and joining users to specific rooms.
+        """
+        invite_key_str = self.kwargs.get('invite_key')
+        response_data = {}
+
+        try:
+            invite_key = RoomInviteKey.objects.get(key=invite_key_str, valid_due__gte=timezone.now())
+            invite_key_marked_for_deletion = False     # Tells whether to delete invite_key after all the operations.
+
+            # One user only logic
+            if invite_key.only_for_this_user and invite_key.only_for_this_user == self.request.user:
+                invite_key.room.users.add(self.request.user)
+                invite_key_marked_for_deletion = True
+            else:
+                response_data['msg'] = "Invite key is valid for another user, not for you."
+                return Response(data=response_data, status=status.HTTP_403_FORBIDDEN)
+
+            # Give admin logic
+            if invite_key.give_admin:
+                invite_key.room.admins.add(self.request.user)
+                invite_key_marked_for_deletion = True
+
+            response_data['room_id'] = invite_key.room.id
+
+            if invite_key_marked_for_deletion:
+                invite_key.delete()
+
+            return Response(data=response_data, status=status.HTTP_200_OK)
+        except (RoomInviteKey.DoesNotExist, Room.DoesNotExist):
+            response_data['msg'] = "Something went wrong. Make sure invite key is valid and it hasn't expired."
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        
