@@ -3,7 +3,7 @@ from rest_framework import viewsets, permissions, status, generics
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from api.models import Room, RoomInviteKey, CustomUser, Message
+from .models import Room, RoomInviteKey, CustomUser, Message
 from .permissions import IsRoomAdminOrStaff, ActionBasedPermission, IsInviteKeyCreatorOrRoomAdminOrStaff, RejectAll
 from .serializers import CustomUserSerializer, RoomSerializer, RoomInviteKeySerializer, MessageSerializer
 
@@ -11,15 +11,15 @@ from django.utils import timezone
 import pytz
 
 
-class CustomUserViewSet(viewsets.ReadOnlyModelViewSet):
+class CustomUserViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for displaying User objects.
+    ViewSet for displaying and creating User objects.
     """
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [ActionBasedPermission]
     action_permissions = {
-        permissions.AllowAny: ['list'],
+        permissions.AllowAny: ['list', 'create'],
         permissions.IsAdminUser: ['retrieve']
     }
     lookup_field = 'username'

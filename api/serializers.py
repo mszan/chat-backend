@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from api.models import Room, RoomInviteKey, CustomUser, Message
+from .models import Room, RoomInviteKey, CustomUser, Message
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -9,9 +9,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
     Serializer associated with built-in User model.
     """
 
+    room_admins = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True)
+    room_users = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True)
+
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'room_admins', 'room_users']
+        fields = ['id', 'username', 'password', 'first_name', 'last_name', 'email', 'room_admins', 'room_users']
         lookup_field = 'username'
 
 
