@@ -5,39 +5,39 @@ from rest_framework.response import Response
 
 from .models import Room, RoomInviteKey, CustomUser, Message
 from .permissions import IsRoomAdminOrStaff, ActionBasedPermission, IsInviteKeyCreatorOrRoomAdminOrStaff, RejectAll
-from .serializers import CustomUserSerializer, RoomSerializer, RoomInviteKeySerializer, MessageSerializer
+from .serializers import RoomSerializer, RoomInviteKeySerializer, MessageSerializer
 
 from django.utils import timezone
 import pytz
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for displaying and creating User objects.
-    """
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
-    permission_classes = [ActionBasedPermission]
-    action_permissions = {
-        permissions.AllowAny: ['list', 'create'],
-        permissions.IsAdminUser: ['retrieve']
-    }
-    lookup_field = 'username'
+# class CustomUserViewSet(viewsets.ModelViewSet):
+#     """
+#     ViewSet for displaying and creating User objects.
+#     """
+#     queryset = CustomUser.objects.all()
+#     serializer_class = CustomUserSerializer
+#     permission_classes = [ActionBasedPermission]
+#     action_permissions = {
+#         permissions.AllowAny: ['list', 'create'],
+#         permissions.IsAdminUser: ['retrieve']
+#     }
+#     lookup_field = 'username'
 
-    def list(self, request, *args, **kwargs):
-        """
-        Overrides list view.
-        If user is staff, display all users.
-        If user is NOT staff, display only logged user.
-        """
-        if request.user.is_staff:
-            queryset = CustomUser.objects.all()
-        else:
-            queryset = CustomUser.objects.filter(username=self.request.user)
+#     def list(self, request, *args, **kwargs):
+#         """
+#         Overrides list view.
+#         If user is staff, display all users.
+#         If user is NOT staff, display only logged user.
+#         """
+#         if request.user.is_staff:
+#             queryset = CustomUser.objects.all()
+#         else:
+#             queryset = CustomUser.objects.filter(username=self.request.user)
 
-        serializer_context = {'request': request}
-        serializer = CustomUserSerializer(queryset, many=True, context=serializer_context)
-        return Response(serializer.data)
+#         serializer_context = {'request': request}
+#         serializer = CustomUserSerializer(queryset, many=True, context=serializer_context)
+#         return Response(serializer.data)
 
 
 class RoomViewSet(viewsets.ModelViewSet):

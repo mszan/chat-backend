@@ -13,12 +13,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admindocs',
+    'django.contrib.sites',
 
     # Third-party libraries.
-    'rest_framework',       # Django Rest Framework.
-    'drf_api_logger',       # Django Rest Framework Logger.
-    'corsheaders',          # Django Cors Headers.
-    'channels',             # Django Channels.
+    'rest_framework',
+    'drf_api_logger',
+    'corsheaders',
+    'channels',
+    'rest_auth',
+    'rest_auth.registration',
+    'rest_framework.authtoken',
+    'allauth',
+    'allauth.account',
 
     # Django apps.
     'api'
@@ -108,7 +114,7 @@ STATIC_ROOT = BASE_DIR.joinpath('static')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # Simple JWT.
+        # 'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 
@@ -138,3 +144,12 @@ CHANNEL_LAYERS = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SITE_ID = 1
+
+# JWT_AUTH = {
+#     'JWT_ALLOW_REFRESH': True
+# }
+
+# should not work due to https://django-rest-auth.readthedocs.io/en/latest/installation.html#jwt-support-optional
+REST_USE_JWT = True

@@ -27,8 +27,8 @@ DATABASES = {
 
 REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] += {
     # Allow default authentication classes to allow browsable API.
-    'rest_framework.authentication.BasicAuthentication',
-    'rest_framework.authentication.SessionAuthentication',
+    # 'rest_framework.authentication.BasicAuthentication',
+    # 'rest_framework.authentication.SessionAuthentication',
 }
 
 # Django Cors Headers.
