@@ -1,5 +1,10 @@
-import os
 from pathlib import Path
+import environ
+
+# Initialise environment variables
+env = environ.Env()
+environ.Env.read_env()
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -25,6 +30,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',
 
     # Django apps.
     'api'
