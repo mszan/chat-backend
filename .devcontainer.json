@@ -1,0 +1,8 @@
+{
+    "name": "chat-app_backend",
+    "dockerComposeFile": ["../docker-compose.development.yml"],
+    "service": "backend",
+    "shutdownAction": "none",
+    // "extensions": [],
+    "workspaceFolder": "/app"
+  }
