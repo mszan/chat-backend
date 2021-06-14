@@ -27,8 +27,8 @@ DATABASES = {
 
 REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'] += {
     # Allow default authentication classes to allow browsable API.
-    'rest_framework.authentication.BasicAuthentication',
-    'rest_framework.authentication.SessionAuthentication',
+    # 'rest_framework.authentication.BasicAuthentication',
+    # 'rest_framework.authentication.SessionAuthentication',
 }
 
 # Django Cors Headers.
@@ -41,3 +41,11 @@ CORS_ALLOW_CREDENTIALS = True
 # CORS_ORIGIN_REGEX_WHITELIST = [
 #     'http://localhost:3030',
 # ]
+
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = env('EMAIL_HOST')
+# EMAIL_USE_TLS = True
+# EMAIL_PORT = env('EMAIL_PORT')
+# EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')

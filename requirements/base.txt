@@ -8,3 +8,4 @@ djangorestframework==3.12.4
 drf-api-logger==1.0.5
 psycopg2-binary==2.8.6
 requests==2.25.1
+django-rest-auth[with_social]==0.9.5
