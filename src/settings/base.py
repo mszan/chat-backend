@@ -152,4 +152,4 @@ SITE_ID = 1
 # }
 
 # should not work due to https://django-rest-auth.readthedocs.io/en/latest/installation.html#jwt-support-optional
-REST_USE_JWT = True
+REST_USE_JWT = False

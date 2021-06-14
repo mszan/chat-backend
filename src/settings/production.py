@@ -6,7 +6,7 @@ import os
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # TODO: Make this false.
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'localhost', 'chat-app.mszanowski.pl']
 
