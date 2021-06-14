@@ -24,3 +24,5 @@ DATABASES = {
 CORS_ALLOWED_ORIGINS = [
     "https://chat-app.mszanowski.pl"
 ]
+
+ACCOUNT_EMAIL_VERIFICATION = 'none'
